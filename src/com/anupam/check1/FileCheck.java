@@ -16,10 +16,11 @@ public class FileCheck {
 	        System.out.println("Hello, World");
 	       //fingerprintCheck();
 	        //slidingMoreBytesWindowCheck1File();
-	        slidingWindowCheck1File();
+	        //slidingWindowCheck1File();
 	       //slidingWindowCheck2File();
 	       // slidingMoreBytesWindowCheck2File();
-	      
+	        ArrayList result=findBoundaries("C:\\Users\\anugan\\test.txt");
+	        showArrayList(result);
 	   
 	    }
 
@@ -179,6 +180,7 @@ public class FileCheck {
 	    }
 	 }
 	 public static void slidingMoreBytesWindowCheck2File(){
+
 		// Create new random irreducible polynomial
 			// These can also be created from Longs or hex Strings
 			Polynomial polynomial = Polynomial.createIrreducible(53);
@@ -303,5 +305,79 @@ public class FileCheck {
 		        System.out.println(pairs.getKey() + " = " + pairs.getValue());
 		        it.remove(); // avoids a ConcurrentModificationException
 		    }
+	 }
+	 public static ArrayList<Integer> findBoundaries(String fileNameWithPath){
+		//this function finds boundaries in a file using ,
+		 //if last 8 bits of the finger print are zero, then its a boundary.
+		 
+		 //VAriable declaration
+		// Create new random irreducible polynomial
+			// These can also be created from Longs or hex Strings
+			Polynomial polynomial = Polynomial.createIrreducible(53);
+			// Create a windowed fingerprint object with a window size of 48 bytes.
+			RabinFingerprintLongWindowed window = new RabinFingerprintLongWindowed(polynomial, 48);
+			ArrayList resultBoundaries=new ArrayList<Integer>();
+			boolean startNewWindow=true;
+			int indexByteArray=0;
+			try {
+				for (byte b : ByteStreams.toByteArray(new FileInputStream(fileNameWithPath))) {
+				   if(startNewWindow){
+					   resultBoundaries.add(indexByteArray);
+					   startNewWindow=false;
+				   }
+					// Push in one byte. Old bytes are automatically popped.
+				    window.pushByte(b);
+				    // Output current window's fingerprint
+				    if(checkCondition(window.getFingerprintLong())){
+				    	resultBoundaries.add(indexByteArray);
+				    	startNewWindow=true;
+				    	window.reset();
+				    }
+				   // System.out.println(Long.toString(window.getFingerprintLong(), 16));
+				}
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return resultBoundaries;
+	 }
+	 public static boolean checkCondition(long value){
+		 String valueBinarySTring=Long.toBinaryString(value);
+		 String last12bits=null;
+		 if(valueBinarySTring.length()>12)
+		 {
+			 last12bits=valueBinarySTring.substring(valueBinarySTring.length()-12, valueBinarySTring.length());
+		 }
+		 else
+		 {
+			 last12bits=valueBinarySTring;
+		 }
+		 int i=0;
+		 while(i<last12bits.length())
+		 {
+			 if(last12bits.charAt(i)=='1')
+				 return false;
+			 i++;
+		 }
+		 
+		 return true;
+	 }
+	 public static void showArrayList( ArrayList<Integer> result){
+		 boolean switchV=true;
+		 for(int item : result){
+			 if(switchV){
+				 System.out.println("\n Start"+item);
+				 switchV=false;
+			 }
+			 else
+			 {
+				 System.out.println("\n End"+item);
+				 switchV=true;
+			 }
+			 
+		 }
 	 }
 }
