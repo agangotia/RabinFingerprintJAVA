@@ -1,13 +1,16 @@
 package com.anupam.check1;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
-import java.util.Arrays;
 import com.google.common.io.ByteStreams;
 import org.rabinfingerprint.fingerprint.RabinFingerprintLong;
 import org.rabinfingerprint.fingerprint.RabinFingerprintLongWindowed;
+import org.rabinfingerprint.handprint.Handprint;
+import org.rabinfingerprint.handprint.Handprints;
+import org.rabinfingerprint.handprint.Handprints.HandPrintFactory;
 import org.rabinfingerprint.polynomial.Polynomial;
 
 public class FileCheck {
@@ -19,9 +22,10 @@ public class FileCheck {
 	        //slidingWindowCheck1File();
 	       //slidingWindowCheck2File();
 	       // slidingMoreBytesWindowCheck2File();
-	        ArrayList result=findBoundaries("C:\\Users\\anugan\\test.txt");
-	        showArrayList(result);
-	   
+	        //ArrayList result=findBoundaries("C:\\Users\\anugan\\time.mp3");
+	        //showArrayList(result);
+	        //System.out.println("tota lboundaries "+result.size());
+	        test("C:\\Users\\anugan\\test.txt");
 	    }
 
 	 public static void fingerprintCheck()
@@ -327,8 +331,11 @@ public class FileCheck {
 				   }
 					// Push in one byte. Old bytes are automatically popped.
 				    window.pushByte(b);
+				    indexByteArray++;
+				   // System.out.println(Long.toString(window.getFingerprintLong(), 16));
 				    // Output current window's fingerprint
 				    if(checkCondition(window.getFingerprintLong())){
+				    	 System.out.println(Long.toString(window.getFingerprintLong(), 16));
 				    	resultBoundaries.add(indexByteArray);
 				    	startNewWindow=true;
 				    	window.reset();
@@ -347,9 +354,10 @@ public class FileCheck {
 	 public static boolean checkCondition(long value){
 		 String valueBinarySTring=Long.toBinaryString(value);
 		 String last12bits=null;
-		 if(valueBinarySTring.length()>12)
+		 int delimitter=16;
+		 if(valueBinarySTring.length()>delimitter)
 		 {
-			 last12bits=valueBinarySTring.substring(valueBinarySTring.length()-12, valueBinarySTring.length());
+			 last12bits=valueBinarySTring.substring(valueBinarySTring.length()-delimitter, valueBinarySTring.length());
 		 }
 		 else
 		 {
@@ -379,5 +387,27 @@ public class FileCheck {
 			 }
 			 
 		 }
+	 }
+	 public static void test(String path){
+		 Polynomial p = Polynomial.createIrreducible(14);
+		 
+		 HandPrintFactory factory = Handprints.newFactory(p);
+		try{
+			File file = new File(path);
+			if (file.exists()) {
+				Handprint hand = factory.newHandprint(new FileInputStream(file));
+				for (Long finger : hand.getHandFingers().keySet()) {
+					System.out.println(String.format("%X", finger));
+				}
+				System.out.flush();
+			} else {
+				System.err.print(String.format("Could not find file %s", path));
+				System.err.flush();
+			}
+		}catch(Exception ex){
+			
+		}
+				
+			
 	 }
 }
